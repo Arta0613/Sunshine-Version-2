@@ -25,13 +25,13 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MainActivityFragment extends Fragment {
-    private static final String TAG = MainActivityFragment.class.getSimpleName();
+public class ForecastFragment extends Fragment {
+    private static final String TAG = ForecastFragment.class.getSimpleName();
     private ArrayAdapter<String> mForecastAdapter;
     private ListView mForecastListView;
     private String forecastJsonStr;
 
-    public MainActivityFragment() {
+    public ForecastFragment() {
         // Required empty public constructor
     }
 
@@ -40,7 +40,7 @@ public class MainActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_forecast, container, false);
 
         mForecastListView = (ListView) rootView.findViewById(R.id.listview_forecast);
 
@@ -113,7 +113,13 @@ public class MainActivityFragment extends Fragment {
         return rootView;
     }
 
+    public class FetchWeatherTask extends AsyncTask<Void, Void, Void> {
 
+        @Override
+        protected Void doInBackground(Void... params) {
+            return null;
+        }
+    }
 
     private final static String[] data = {
             "Mon 6/23 - Sunny - 31/17",
