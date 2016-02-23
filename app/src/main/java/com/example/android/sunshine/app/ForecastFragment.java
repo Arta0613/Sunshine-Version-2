@@ -35,6 +35,11 @@ public class ForecastFragment extends Fragment {
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -52,64 +57,6 @@ public class ForecastFragment extends Fragment {
                 weekForecast);
         mForecastListView.setAdapter(mForecastAdapter);
 
-        HttpURLConnection urlConnection = null;
-        BufferedReader bufferedReader = null;
-
-        try {
-            String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043,usa&mode=json&units=metric&cnt=7";
-            String apiKey = "&APPID" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
-            URL url = new URL(baseUrl.concat(apiKey));
-
-            // Create request to OpenWeatherMap, and open the connection
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
-                // Nothing to do
-                return null;
-            }
-            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                line += "\n";
-                buffer.append(line);
-            }
-
-            if (buffer.length() == 0) {
-                // Stream was empty
-                return null;
-            }
-            forecastJsonStr = buffer.toString();
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(TAG, "Error: ", e);
-            // If the code didn't successfully get the weather data, there's no point in attemping
-            // to parse it.
-            return null;
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-
-            if (bufferedReader != null) {
-                try {
-                    bufferedReader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Log.e(TAG, "Error closing stream: ", e);
-                }
-            }
-        }
-
         return rootView;
     }
 
@@ -117,6 +64,63 @@ public class ForecastFragment extends Fragment {
 
         @Override
         protected Void doInBackground(Void... params) {
+            HttpURLConnection urlConnection = null;
+            BufferedReader bufferedReader = null;
+
+            try {
+                String baseUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?q=94043,usa&mode=json&units=metric&cnt=7";
+                String apiKey = "&APPID" + BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+                URL url = new URL(baseUrl.concat(apiKey));
+
+                // Create request to OpenWeatherMap, and open the connection
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
+
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    // Nothing to do
+                    return null;
+                }
+                bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                    // But it does make debugging a *lot* easier if you print out the completed
+                    // buffer for debugging.
+                    line += "\n";
+                    buffer.append(line);
+                }
+
+                if (buffer.length() == 0) {
+                    // Stream was empty
+                    return null;
+                }
+                forecastJsonStr = buffer.toString();
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e(TAG, "Error: ", e);
+                // If the code didn't successfully get the weather data, there's no point in attemping
+                // to parse it.
+                return null;
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+
+                if (bufferedReader != null) {
+                    try {
+                        bufferedReader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, "Error closing stream: ", e);
+                    }
+                }
+            }
             return null;
         }
     }
