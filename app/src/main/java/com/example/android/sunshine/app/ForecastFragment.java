@@ -3,10 +3,12 @@ package com.example.android.sunshine.app;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -202,8 +204,7 @@ public class ForecastFragment extends Fragment {
                 requestPermissions(new String[]{Manifest.permission.INTERNET},
                         MY_PERMISSIONS_REQUEST_INTERNET);
             } else {
-                FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
-                fetchWeatherTask.execute("94043");
+                executeFetchWeatherTask();
             }
             return true;
         }
@@ -221,8 +222,7 @@ public class ForecastFragment extends Fragment {
 
                     // permission was granted, yay! Do the
                     // internet-related task you need to do.
-                    FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
-                    fetchWeatherTask.execute();
+                    executeFetchWeatherTask();
 
                 } else {
 
@@ -233,6 +233,13 @@ public class ForecastFragment extends Fragment {
             // other 'case' lines to check for other
             // permissions this app might request
         }
+    }
+
+    private void executeFetchWeatherTask() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = prefs.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+        FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
+        fetchWeatherTask.execute(location);
     }
 
     /* The date/time conversion code is going to be moved outside the asynctask later,
