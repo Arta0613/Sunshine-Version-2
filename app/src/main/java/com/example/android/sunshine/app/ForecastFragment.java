@@ -36,8 +36,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 
 /**
@@ -48,7 +46,6 @@ public class ForecastFragment extends Fragment {
     private static final int MY_PERMISSIONS_REQUEST_INTERNET = 1111;
     private ArrayAdapter<String> mForecastAdapter;
     private ListView mForecastListView;
-    private static String[] data = {"Hi"};
 
     public ForecastFragment() {
         // Required empty public constructor
@@ -68,12 +65,12 @@ public class ForecastFragment extends Fragment {
 
         mForecastListView = (ListView) rootView.findViewById(R.id.listview_forecast);
 
-        List<String> weekForecast = new ArrayList<>(Arrays.asList(data));
         mForecastAdapter = new ArrayAdapter<>(
                 getActivity(),
                 R.layout.list_item_forcast,
                 R.id.list_item_forecast_textview,
-                weekForecast);
+                new ArrayList<String>());
+
         mForecastListView.setAdapter(mForecastAdapter);
         mForecastListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -150,7 +147,6 @@ public class ForecastFragment extends Fragment {
                 }
 
                 forecastJsonStr = buffer.toString();
-                data = getWeatherDataFromJson(forecastJsonStr, numDays);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -158,8 +154,6 @@ public class ForecastFragment extends Fragment {
                 // If the code didn't successfully get the weather data, there's no point in attemping
                 // to parse it.
                 return null;
-            } catch (JSONException e) {
-                e.printStackTrace();
             } finally {
                 if (urlConnection != null) {
                     urlConnection.disconnect();
@@ -175,7 +169,14 @@ public class ForecastFragment extends Fragment {
                 }
             }
 
-            return data;
+            try {
+                return getWeatherDataFromJson(forecastJsonStr, numDays);
+            } catch (JSONException e) {
+                Log.e(TAG, e.getMessage(), e);
+                e.printStackTrace();
+            }
+
+            return null;
         }
 
         @Override
@@ -204,7 +205,7 @@ public class ForecastFragment extends Fragment {
                 requestPermissions(new String[]{Manifest.permission.INTERNET},
                         MY_PERMISSIONS_REQUEST_INTERNET);
             } else {
-                executeFetchWeatherTask();
+                updateWeather();
             }
             return true;
         }
@@ -222,7 +223,7 @@ public class ForecastFragment extends Fragment {
 
                     // permission was granted, yay! Do the
                     // internet-related task you need to do.
-                    executeFetchWeatherTask();
+                    updateWeather();
 
                 } else {
 
@@ -235,16 +236,22 @@ public class ForecastFragment extends Fragment {
         }
     }
 
-    private void executeFetchWeatherTask() {
+    private void updateWeather() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String location = prefs.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
         FetchWeatherTask fetchWeatherTask = new FetchWeatherTask();
         fetchWeatherTask.execute(location);
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
     /* The date/time conversion code is going to be moved outside the asynctask later,
-         * so for convenience we're breaking it out into its own method now.
-         */
+             * so for convenience we're breaking it out into its own method now.
+             */
     private String getReadableDateString(long time) {
         // Because the API returns a unix timestamp (measured in seconds),
         // it must be converted to milliseconds in order to be converted to valid date.
