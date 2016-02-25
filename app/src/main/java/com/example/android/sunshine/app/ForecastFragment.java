@@ -361,6 +361,5 @@ public class ForecastFragment extends Fragment {
         }
 
         return resultStrs;
-
     }
 }
